@@ -1,0 +1,23 @@
+# Node modules
+node_modules/
+
+# Env files
+.env
+
+# Build files
+dist/
+build/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Vite / React cache
+.vite/
+
+# IDE files
+.vscode/
+.idea/
