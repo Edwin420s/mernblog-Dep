@@ -1,5 +1,4 @@
 // server.js
-
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -8,10 +7,18 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const passport = require('passport');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 require('./config/passport'); // Google strategy setup
-const errorHandler = require('./middleware/errorMiddleware');
 
 const app = express();
+
+// 🔐 Security Middleware
+app.use(helmet());
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests
+}));
 
 // ✅ CORS Middleware
 app.use(cors({
@@ -38,7 +45,7 @@ app.use(session({
 
 // ✅ Passport Initialization
 app.use(passport.initialize());
-// If you were using sessions with login persistence, you'd also add:
+// If using persistent sessions:
 // app.use(passport.session());
 
 // ✅ Connect to MongoDB
@@ -52,8 +59,19 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/posts', require('./routes/postRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
 
-// ✅ Custom Error Handler
-app.use(errorHandler);
+// ✅ Custom Error Handler Middleware
+app.use((err, req, res, next) => {
+  // Log error stack only in development
+  if (process.env.NODE_ENV !== 'production') {
+    console.error(err.stack);
+  }
+
+  // Send JSON error response
+  res.status(err.statusCode || 500).json({
+    success: false,
+    message: err.message || 'Something went wrong. Please try again later.'
+  });
+});
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5000;
@@ -61,6 +79,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 
-// ✅ Export app for testing if needed
+// ✅ Export for testing if needed
 module.exports = app;
-// This file sets up the Express server, connects to MongoDB, configures middleware, and defines API routes.

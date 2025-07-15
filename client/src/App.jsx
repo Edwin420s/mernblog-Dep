@@ -1,22 +1,21 @@
-// src/App.jsx
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
 import Navbar from './components/Navbar';
-import HomePage from './pages/HomePage';
-import PostPage from './pages/PostPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ProfilePage from './pages/ProfilePage';
-import CreatePostPage from './pages/CreatePostPage';
-import EditPostPage from './pages/EditPostPage';
-import AdminDashboard from './pages/AdminDashboard';
-
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
-
 import styled from 'styled-components';
+
+// Lazy-loaded page components
+const HomePage = lazy(() => import('./pages/HomePage'));
+const PostPage = lazy(() => import('./pages/PostPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const CreatePostPage = lazy(() => import('./pages/CreatePostPage'));
+const EditPostPage = lazy(() => import('./pages/EditPostPage'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
 const AppContainer = styled.div`
   min-height: 100vh;
@@ -35,25 +34,28 @@ function App() {
       <AppContainer>
         <Navbar />
         <Main>
-          <Routes>
-            {/* ✅ Public Routes */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/posts/:id" element={<PostPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+          {/* Suspense fallback during lazy loading */}
+          <Suspense fallback={<div>Loading...</div>}>
+            <Routes>
+              {/* ✅ Public Routes */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/posts/:id" element={<PostPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
 
-            {/* 🔒 Private Routes */}
-            <Route element={<PrivateRoute />}>
-              <Route path="/profile" element={<ProfilePage />} />
-            </Route>
+              {/* 🔒 Private Routes */}
+              <Route element={<PrivateRoute />}>
+                <Route path="/profile" element={<ProfilePage />} />
+              </Route>
 
-            {/* 🛡️ Admin Routes */}
-            <Route element={<AdminRoute />}>
-              <Route path="/create-post" element={<CreatePostPage />} />
-              <Route path="/edit-post/:id" element={<EditPostPage />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-            </Route>
-          </Routes>
+              {/* 🛡️ Admin Routes */}
+              <Route element={<AdminRoute />}>
+                <Route path="/create-post" element={<CreatePostPage />} />
+                <Route path="/edit-post/:id" element={<EditPostPage />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+              </Route>
+            </Routes>
+          </Suspense>
         </Main>
       </AppContainer>
     </AuthProvider>
